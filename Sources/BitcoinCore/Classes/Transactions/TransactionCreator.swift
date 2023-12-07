@@ -31,8 +31,9 @@ class TransactionCreator {
 }
 
 extension TransactionCreator: ITransactionCreator {
-    func create(to address: String, value: Int, feeRate: Int, senderPay: Bool, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> FullTransaction {
+    func create(from: String?, to address: String, value: Int, feeRate: Int, senderPay: Bool, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> FullTransaction {
         let transaction = try transactionBuilder.buildTransaction(
+            from: from,
             toAddress: address,
             value: value,
             feeRate: feeRate,
@@ -52,8 +53,9 @@ extension TransactionCreator: ITransactionCreator {
         return transaction
     }
 
-    func createRawTransaction(to address: String, value: Int, feeRate: Int, senderPay: Bool, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> Data {
+    func createRawTransaction(from: String?, to address: String, value: Int, feeRate: Int, senderPay: Bool, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> Data {
         let transaction = try transactionBuilder.buildTransaction(
+            from: from,
             toAddress: address,
             value: value,
             feeRate: feeRate,
