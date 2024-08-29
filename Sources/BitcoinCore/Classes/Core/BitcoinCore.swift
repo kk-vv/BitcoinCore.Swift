@@ -150,21 +150,21 @@ public extension BitcoinCore {
         dataProvider.transaction(hash: hash)
     }
 
-    func send(to address: String, value: Int, feeRate: Int, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> FullTransaction {
+    func send(from: String?, to address: String, value: Int, feeRate: Int, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> FullTransaction {
         guard let transactionCreator else {
             throw CoreError.readOnlyCore
         }
 
-        return try transactionCreator.create(to: address, value: value, feeRate: feeRate, senderPay: true, sortType: sortType, pluginData: pluginData)
+        return try transactionCreator.create(from: from, to: address, value: value, feeRate: feeRate, senderPay: true, sortType: sortType, pluginData: pluginData)
     }
 
-    func send(to hash: Data, scriptType: ScriptType, value: Int, feeRate: Int, sortType: TransactionDataSortType) throws -> FullTransaction {
+    func send(from: String?, to hash: Data, scriptType: ScriptType, value: Int, feeRate: Int, sortType: TransactionDataSortType) throws -> FullTransaction {
         guard let transactionCreator else {
             throw CoreError.readOnlyCore
         }
 
         let toAddress = try addressConverter.convert(lockingScriptPayload: hash, type: scriptType)
-        return try transactionCreator.create(to: toAddress.stringValue, value: value, feeRate: feeRate, senderPay: true, sortType: sortType, pluginData: [:])
+        return try transactionCreator.create(from: from, to: toAddress.stringValue, value: value, feeRate: feeRate, senderPay: true, sortType: sortType, pluginData: [:])
     }
 
     internal func redeem(from unspentOutput: UnspentOutput, to address: String, feeRate: Int, sortType: TransactionDataSortType) throws -> FullTransaction {
@@ -175,12 +175,12 @@ public extension BitcoinCore {
         return try transactionCreator.create(from: unspentOutput, to: address, feeRate: feeRate, sortType: sortType)
     }
 
-    func createRawTransaction(to address: String, value: Int, feeRate: Int, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> Data {
+    func createRawTransaction(from: String?, to address: String, value: Int, feeRate: Int, sortType: TransactionDataSortType, pluginData: [UInt8: IPluginData] = [:]) throws -> Data {
         guard let transactionCreator else {
             throw CoreError.readOnlyCore
         }
 
-        return try transactionCreator.createRawTransaction(to: address, value: value, feeRate: feeRate, senderPay: true, sortType: sortType, pluginData: pluginData)
+        return try transactionCreator.createRawTransaction(from: from, to: address, value: value, feeRate: feeRate, senderPay: true, sortType: sortType, pluginData: pluginData)
     }
 
     func validate(address: String, pluginData: [UInt8: IPluginData] = [:]) throws {
@@ -191,20 +191,20 @@ public extension BitcoinCore {
         paymentAddressParser.parse(paymentAddress: paymentAddress)
     }
 
-    func fee(for value: Int, toAddress: String? = nil, feeRate: Int, pluginData: [UInt8: IPluginData] = [:]) throws -> Int {
+    func fee(from: String?, for value: Int, toAddress: String? = nil, feeRate: Int, pluginData: [UInt8: IPluginData] = [:]) throws -> Int {
         guard let transactionFeeCalculator else {
             throw CoreError.readOnlyCore
         }
 
-        return try transactionFeeCalculator.fee(for: value, feeRate: feeRate, senderPay: true, toAddress: toAddress, pluginData: pluginData)
+        return try transactionFeeCalculator.fee(from: from, for: value, feeRate: feeRate, senderPay: true, toAddress: toAddress, pluginData: pluginData)
     }
 
-    func maxSpendableValue(toAddress: String? = nil, feeRate: Int, pluginData: [UInt8: IPluginData] = [:]) throws -> Int {
+    func maxSpendableValue(from: String?, toAddress: String? = nil, feeRate: Int, pluginData: [UInt8: IPluginData] = [:]) throws -> Int {
         guard let transactionFeeCalculator else {
             throw CoreError.readOnlyCore
         }
 
-        let sendAllFee = try transactionFeeCalculator.fee(for: balance.spendable, feeRate: feeRate, senderPay: false, toAddress: toAddress, pluginData: pluginData)
+        let sendAllFee = try transactionFeeCalculator.fee(from: from, for: balance.spendable, feeRate: feeRate, senderPay: false, toAddress: toAddress, pluginData: pluginData)
         return max(0, balance.spendable - sendAllFee)
     }
 

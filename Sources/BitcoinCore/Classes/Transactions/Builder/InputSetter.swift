@@ -40,7 +40,7 @@ class InputSetter {
 }
 
 extension InputSetter: IInputSetter {
-    func setInputs(to mutableTransaction: MutableTransaction, feeRate: Int, senderPay: Bool, sortType: TransactionDataSortType) throws {
+    func setInputs(from: String?, to mutableTransaction: MutableTransaction, feeRate: Int, senderPay: Bool, sortType: TransactionDataSortType) throws {
         let value = mutableTransaction.recipientValue
         let unspentOutputInfo = try unspentOutputSelector.select(
             value: value, feeRate: feeRate,
@@ -58,7 +58,12 @@ extension InputSetter: IInputSetter {
         // Add change output if needed
         if let changeValue = unspentOutputInfo.changeValue {
             let changePubKey = try publicKeyManager.changePublicKey()
-            let changeAddress = try addressConverter.convert(publicKey: changePubKey, type: changeScriptType)
+            let changeAddress: Address
+            if let from = from, !from.isEmpty {
+                changeAddress = try addressConverter.convert(address: from)
+            } else {
+                changeAddress = try addressConverter.convert(publicKey: changePubKey, type: changeScriptType)
+            }
 
             mutableTransaction.changeAddress = changeAddress
             mutableTransaction.changeValue = changeValue
